@@ -1,0 +1,17 @@
+{
+	"name": "@wilderzone/vgs",
+	"description": "",
+	"version": "1.0.0",
+	"author": "Giga",
+	"license": "MIT",
+	"main": "./npm/index.js",
+	"types": "./npm/index.d.ts",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/wilderzone/vgs.git"
+	},
+	"bugs": {
+		"url": "https://github.com/wilderzone/vgs/issues"
+	},
+	"homepage": "https://github.com/wilderzone/vgs#readme"
+}
