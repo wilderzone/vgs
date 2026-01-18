@@ -3,6 +3,8 @@
 		"target": "es2022",
 		"module": "es2022",
 		"declaration": true,
+		"emitDeclarationOnly": true,
+		"outDir": "./npm",
 		"strict": true
 	},
 	"include": ["./src/**/*"]

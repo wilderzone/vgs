@@ -1,2 +1,7 @@
 {
+	"tasks": {
+		"build": "deno run build-jsr && deno run build-npm",
+		"build-jsr": "cp ./src/* ./jsr",
+		"build-npm": "deno bundle --minify --output ./npm/index.js ./src/index.ts && tsc"
+	}
 }
