@@ -1,1 +1,2 @@
-# vgs
+# VGS
+Voice Game System
