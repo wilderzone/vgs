@@ -1,12 +1,20 @@
 # VGS
 Voice Game System
 
+```sh
+npm install @wilderzone/vgs
+
+# or
+
+deno add @wilderzone/vgs
+```
+
 
 ## Usage
 
 Create and configure a VGS instance.
 ```ts
-import { VGS, type VGSConfig, type VGSMatch } from '';
+import { VGS, type VGSConfig, type VGSMatch } from '@wilderzone/vgs';
 import { data } from './your/data';
 
 // Configure VGS.

@@ -1,4 +1,9 @@
 {
+	"name": "@wilderzone/vgs",
+	"version": "1.0.0",
+	"license": "MIT",
+	"exports": "./jsr/index.ts",
+	"exclude": ["!./jsr", "./npm", "./src", "./tsconfig.json"],
 	"tasks": {
 		"build": "deno run build-jsr && deno run build-npm",
 		"build-jsr": "cp ./src/* ./jsr",
