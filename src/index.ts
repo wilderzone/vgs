@@ -32,17 +32,19 @@ export interface VGSConfig {
 	 */
 	timeout?: number;
 	/**
-	 * The key used to trigger VGS.
+	 * The key (or keys) used to trigger VGS.
+	 * Set this to an array to allow any of the provided keys to trigger VGS.
 	 * 
 	 * _Optional, default: `"V"`_
 	 */
-	trigger?: string;
+	trigger?: string | string[];
 	/**
-	 * The key used to cancel the current VGS sequence.
+	 * The key (or keys) used to cancel the current VGS sequence.
+	 * Set this to an array to allow any of the provided keys to cancel the sequence.
 	 * 
 	 * _Optional, default: `"Escape"`_
 	 */
-	cancel?: string;
+	cancel?: string | string[];
 }
 
 type VGSEvent = 'cancel' | 'options' | 'match' | 'timeout' | 'trigger';
@@ -76,12 +78,33 @@ export class VGS {
 		this.config = {
 			options: config.options,
 			timeout: config.timeout ?? 3000,
-			trigger: config.trigger?.toUpperCase() || 'V',
-			cancel: config.cancel?.toUpperCase() || 'ESCAPE'
+			trigger: this.allToUpperCase(config.trigger || '') || 'V',
+			cancel: this.allToUpperCase(config.cancel || '') || 'ESCAPE'
 		};
 		this.options = Object
 			.entries(this.config.options)
 			.map(([ command, option ]) => ({ command, option }));
+	}
+
+	private allToUpperCase(value: string | string[]): string | string[] {
+		if (typeof value === 'string') {
+			return value.toUpperCase();
+		}
+		return value.map(key => key.toUpperCase());
+	}
+
+	private isCancelKey(key: string): boolean {
+		if (typeof this.config.cancel === 'string') {
+			return this.config.cancel === key;
+		}
+		return this.config.cancel.includes(key);
+	}
+
+	private isTriggerKey(key: string): boolean {
+		if (typeof this.config.trigger === 'string') {
+			return this.config.trigger === key;
+		}
+		return this.config.trigger.includes(key);
 	}
 
 	private reset(): void {
@@ -141,9 +164,9 @@ export class VGS {
 	 */
 	public press(key: string): void {
 		key = key.toUpperCase();
-		const isCancel = key === this.config.cancel;
+		const isCancel = this.isCancelKey(key);
 		const isLong = key.length > 1;
-		const isTrigger = key === this.config.trigger;
+		const isTrigger = this.isTriggerKey(key);
 
 		if (isCancel || isLong) {
 			this.cancel();
