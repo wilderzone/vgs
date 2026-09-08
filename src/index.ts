@@ -1,5 +1,6 @@
 type VGSOptionType = 'category' | 'line';
 
+/** A single VGS option (category or voice line). */
 export interface VGSOption {
 	type: VGSOptionType;
 	name?: string;
@@ -7,6 +8,7 @@ export interface VGSOption {
 	phrase?: string;
 }
 
+/** A single VGS category or voice line, matched by the provided key sequence. */
 export interface VGSMatch {
 	type: VGSOptionType;
 	command: string;
@@ -138,17 +140,20 @@ export class VGS {
 		globalThis.clearTimeout(this.timer);
 	}
 
-	private timeout(): void {
-		this.reset();
-		for (const callback of this.callbacks.timeout) {
-			callback();
-		}
-
+	private emitOptions(): void {
 		const options = this.getCurrentOptions();
 		const matches = this.unwrapOptions(options);
 		for (const callback of this.callbacks.options) {
 			callback(matches);
 		}
+	}
+
+	private timeout(): void {
+		this.reset();
+		for (const callback of this.callbacks.timeout) {
+			callback();
+		}
+		this.emitOptions();
 	}
 
 	private processSequence(): void {
@@ -163,6 +168,7 @@ export class VGS {
 				callback(this.unwrapOption(match));
 			}
 			this.reset();
+			this.emitOptions();
 		}
 
 		// Some options were found.
@@ -220,12 +226,7 @@ export class VGS {
 		for (const callback of this.callbacks.cancel) {
 			callback();
 		}
-
-		const options = this.getCurrentOptions();
-		const matches = this.unwrapOptions(options);
-		for (const callback of this.callbacks.options) {
-			callback(matches);
-		}
+		this.emitOptions();
 	}
 
 	/**
