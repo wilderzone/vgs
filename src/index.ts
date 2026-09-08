@@ -16,6 +16,11 @@ export interface VGSMatch {
 	phrase?: string;
 }
 
+interface VGSWrappedOption {
+	command: string;
+	option: VGSOption;
+}
+
 /**
  * VGS configuration.
  */
@@ -70,7 +75,7 @@ export class VGS {
 		timeout: <VGSCallback<'timeout'>[]> [],
 		trigger: <VGSCallback<'trigger'>[]> []
 	};
-	private options: { command: string, option: VGSOption }[];
+	private options: VGSWrappedOption[];
 	private sequence: string[] = [];
 	private timer: number | undefined;
 
@@ -91,6 +96,27 @@ export class VGS {
 			return value.toUpperCase();
 		}
 		return value.map(key => key.toUpperCase());
+	}
+
+	private getCurrentOptions(): VGSWrappedOption[] {
+		const command = this.sequence.join('');
+		const options = this.options
+			.filter(option => option.command.length === command.length + 1)
+			.filter(option => option.command.startsWith(command));
+		return options;
+	}
+
+	private unwrapOption(option: VGSWrappedOption): VGSMatch {
+		const match: VGSMatch = {
+			...option.option,
+			key: option.command.at(-1)!,
+			command: option.command
+		};
+		return match;
+	}
+
+	private unwrapOptions(options: VGSWrappedOption[]): VGSMatch[] {
+		return options.map(option => this.unwrapOption(option));
 	}
 
 	private isCancelKey(key: string): boolean {
@@ -117,36 +143,33 @@ export class VGS {
 		for (const callback of this.callbacks.timeout) {
 			callback();
 		}
+
+		const options = this.getCurrentOptions();
+		const matches = this.unwrapOptions(options);
+		for (const callback of this.callbacks.options) {
+			callback(matches);
+		}
 	}
 
 	private processSequence(): void {
 		// Get the available options from the current sequence.
 		const command = this.sequence.join('');
 		const match = this.options.find(option => option.command === command);
-		const options = this.options
-			.filter(option => option.command.length === command.length + 1)
-			.filter(option => option.command.startsWith(command));
+		const options = this.getCurrentOptions();
 
 		// A match was found.
 		if (match && match.option.type === 'line') {
 			for (const callback of this.callbacks.match) {
-				callback({
-					...match.option,
-					key: match.command.at(-1)!,
-					command: match.command
-				});
+				callback(this.unwrapOption(match));
 			}
 			this.reset();
 		}
 
 		// Some options were found.
 		if (options.length) {
+			const matches = this.unwrapOptions(options);
 			for (const callback of this.callbacks.options) {
-				callback(options.map(option => ({
-					...option.option,
-					key: option.command.at(-1)!,
-					command: option.command
-				})));
+				callback(matches);
 			}
 		}
 
@@ -190,22 +213,35 @@ export class VGS {
 	/**
 	 * Cancel the current VGS sequence.
 	 * 
-	 * @note This will fire the `cancel` event.
+	 * @note This will fire the `cancel` event, followed by the `options` event.
 	 */
 	public cancel(): void {
 		this.reset();
 		for (const callback of this.callbacks.cancel) {
 			callback();
 		}
+
+		const options = this.getCurrentOptions();
+		const matches = this.unwrapOptions(options);
+		for (const callback of this.callbacks.options) {
+			callback(matches);
+		}
 	}
 
 	/**
 	 * Register a function to be called when a particular event is fired.
 	 * 
+	 * @note If event is `options`, the provided function will be called immediately with the initial set of VGS options.
 	 * @param event The event to listen to.
 	 * @param callback The function to call.
 	 */
 	public on<T extends VGSEvent>(event: T, callback: VGSCallback<T>): void {
 		(this.callbacks[event] as VGSCallback<T>[]).push(callback);
+
+		if (event === 'options') {
+			const options = this.getCurrentOptions();
+			const matches = this.unwrapOptions(options);
+			(callback as VGSCallback<'options'>)(matches);
+		}
 	}
 }
