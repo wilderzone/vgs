@@ -14,14 +14,25 @@ deno add @wilderzone/vgs
 
 Create and configure a VGS instance.
 ```ts
-import { VGS, type VGSConfig, type VGSMatch } from '@wilderzone/vgs';
-import { data } from './your/data';
+import { VGS } from '@wilderzone/vgs';
+import type { VGSConfig, VGSMatch, VGSOption } from '@wilderzone/vgs';
 
-// Configure VGS.
+// Configure categories and voice lines.
+const options: Record<string, VGSOption> = {
+	V:   { type: 'category', name: 'Voice Commands'                                   },
+	VG:  { type: 'category', name: 'Global',                                          },
+	VGS: { type: 'line',     name: "Shazbot", file: 'AUD_VGS.ogg', phrase: "Shazbot!" },
+	VGW: { type: 'line',     name: "Woohoo",  file: 'AUD_VGW.ogg', phrase: "Woohoo!"  },
+	VA:  { type: 'category', name: 'Attack'                                           },
+	VAA: { type: 'line',     name: "Attack",  file: 'AUD_VAA.ogg', phrase: "Attack!"  }
+	// ...
+};
+
+// Configure the VGS.
 const config: VGSConfig = {
 	trigger: 'V',
 	timeout: 3000,
-	options: data
+	options
 };
 
 // Create a new VGS instance.
@@ -51,7 +62,7 @@ When the VGS finds a match, it will call your `'match'` callback so you can play
 
 | Option     | Required | Default    | Description                                                                                                    |
 | :--------- | :------- | :--------: | :------------------------------------------------------------------------------------------------------------- |
-| `options`  | *        |            | The voice lines to include in the VGS.                                                                         |
+| `options`  | ✓        |            | The voice lines to include in the VGS.                                                                         |
 | `timeout`  |          | `3000`     | The duration (in ms) to wait for further keypresses before timing out. Set this to `0` to disable the timeout. |
 | `trigger`  |          | `"V"`      | The key used to trigger VGS.                                                                                   |
 | `cancel`   |          | `"Escape"` | The key used to cancel the current VGS sequence.                                                               |
