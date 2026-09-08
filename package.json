@@ -1,6 +1,6 @@
 {
 	"name": "@wilderzone/vgs",
-	"description": "",
+	"description": "An implementation of the Voice Game System from Tribes: Ascend.",
 	"version": "1.1.1",
 	"author": "Giga",
 	"license": "MIT",
